@@ -16,153 +16,147 @@
   <link id="app-icon-svg" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231e3a8a'/%3E%3Crect x='22' y='15' width='52' height='70' rx='6' fill='%23ffffff'/%3E%3Crect x='29' y='24' width='28' height='13' rx='4' fill='%23ef4444'/%3E%3Crect x='29' y='45' width='36' height='5' rx='2' fill='%2394a3b8'/%3E%3Crect x='29' y='56' width='28' height='5' rx='2' fill='%2394a3b8'/%3E%3Crect x='29' y='67' width='22' height='5' rx='2' fill='%233b82f6'/%3E%3Cpath d='M58 72 L78 52 L85 59 L65 79 L56 81 Z' fill='%23f59e0b'/%3E%3C/svg%3E" />
   <link id="app-icon-192" rel="icon" type="image/png" sizes="192x192" href="" />
   <link id="app-touch-icon" rel="apple-touch-icon" sizes="192x192" href="" />
-  <link id="app-manifest" rel="manifest" href="" />
+  <link id="app-manifest" rel="manifest" />
 
-  <!-- Generate crisp 192px & 512px PNG app icons and PWA manifest synchronously at startup -->
+  <!-- Generate crisp PNG icons; attach real ./manifest.json ONLY when hosted on HTTPS and present -->
   <script>
     (function () {
-      try {
-        function makeAppIcon(size, maskable) {
-          var c = document.createElement("canvas");
-          c.width = size;
-          c.height = size;
-          var ctx = c.getContext("2d");
-          var s = size;
+      window.__makePdfAppIcon = function (size, maskable) {
+        var c = document.createElement("canvas");
+        c.width = size;
+        c.height = size;
+        var ctx = c.getContext("2d");
+        var s = size;
 
-          var grad = ctx.createLinearGradient(0, 0, s, s);
-          grad.addColorStop(0, "#1e3a8a");
-          grad.addColorStop(1, "#2563eb");
+        var grad = ctx.createLinearGradient(0, 0, s, s);
+        grad.addColorStop(0, "#1e3a8a");
+        grad.addColorStop(1, "#2563eb");
 
-          if (maskable) {
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, s, s);
-          } else {
-            var r = s * 0.22;
-            ctx.beginPath();
-            ctx.moveTo(r, 0);
-            ctx.arcTo(s, 0, s, s, r);
-            ctx.arcTo(s, s, 0, s, r);
-            ctx.arcTo(0, s, 0, 0, r);
-            ctx.arcTo(0, 0, s, 0, r);
-            ctx.closePath();
-            ctx.fillStyle = grad;
-            ctx.fill();
-          }
-
-          var pad = maskable ? s * 0.2 : s * 0.14;
-          var w = s - pad * 2;
-          var docX = pad + w * 0.1;
-          var docY = pad + w * 0.04;
-          var docW = w * 0.72;
-          var docH = w * 0.92;
-          var fold = docW * 0.26;
-          var dr = w * 0.06;
-
-          ctx.fillStyle = "#ffffff";
+        if (maskable) {
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, s, s);
+        } else {
+          var r = s * 0.22;
           ctx.beginPath();
-          ctx.moveTo(docX + dr, docY);
-          ctx.lineTo(docX + docW - fold, docY);
-          ctx.lineTo(docX + docW, docY + fold);
-          ctx.lineTo(docX + docW, docY + docH - dr);
-          ctx.arcTo(docX + docW, docY + docH, docX, docY + docH, dr);
-          ctx.lineTo(docX + dr, docY + docH);
-          ctx.arcTo(docX, docY + docH, docX, docY, dr);
-          ctx.lineTo(docX, docY + dr);
-          ctx.arcTo(docX, docY, docX + docW, docY, dr);
+          ctx.moveTo(r, 0);
+          ctx.arcTo(s, 0, s, s, r);
+          ctx.arcTo(s, s, 0, s, r);
+          ctx.arcTo(0, s, 0, 0, r);
+          ctx.arcTo(0, 0, s, 0, r);
           ctx.closePath();
+          ctx.fillStyle = grad;
           ctx.fill();
-
-          ctx.fillStyle = "#cbd5e1";
-          ctx.beginPath();
-          ctx.moveTo(docX + docW - fold, docY);
-          ctx.lineTo(docX + docW - fold, docY + fold);
-          ctx.lineTo(docX + docW, docY + fold);
-          ctx.closePath();
-          ctx.fill();
-
-          var badgeX = docX + docW * 0.12;
-          var badgeY = docY + docH * 0.14;
-          var badgeW = docW * 0.54;
-          var badgeH = docH * 0.18;
-          var br = badgeH * 0.35;
-          ctx.fillStyle = "#ef4444";
-          ctx.beginPath();
-          ctx.moveTo(badgeX + br, badgeY);
-          ctx.arcTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + badgeH, br);
-          ctx.arcTo(badgeX + badgeW, badgeY + badgeH, badgeX, badgeY + badgeH, br);
-          ctx.arcTo(badgeX, badgeY + badgeH, badgeX, badgeY, br);
-          ctx.arcTo(badgeX, badgeY, badgeX + badgeW, badgeY, br);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "900 " + Math.round(badgeH * 0.62) + "px sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("PDF", badgeX + badgeW / 2, badgeY + badgeH * 0.53);
-
-          ctx.fillStyle = "#94a3b8";
-          var lineX = docX + docW * 0.14;
-          var lineH = docH * 0.065;
-          ctx.fillRect(lineX, docY + docH * 0.44, docW * 0.68, lineH);
-          ctx.fillRect(lineX, docY + docH * 0.58, docW * 0.54, lineH);
-          ctx.fillStyle = "#3b82f6";
-          ctx.fillRect(lineX, docY + docH * 0.72, docW * 0.42, lineH);
-
-          ctx.save();
-          ctx.translate(pad + w * 0.78, pad + w * 0.72);
-          ctx.rotate(-Math.PI / 4);
-          var pw = w * 0.13;
-          var ph = w * 0.42;
-          ctx.fillStyle = "rgba(15, 23, 42, 0.22)";
-          ctx.fillRect(-pw * 0.5 + w * 0.02, -ph * 0.5 + w * 0.02, pw, ph);
-          ctx.fillStyle = "#f59e0b";
-          ctx.fillRect(-pw * 0.5, -ph * 0.5, pw, ph);
-          ctx.fillStyle = "#fb7185";
-          ctx.fillRect(-pw * 0.5, -ph * 0.63, pw, ph * 0.14);
-          ctx.fillStyle = "#fde68a";
-          ctx.beginPath();
-          ctx.moveTo(-pw * 0.5, ph * 0.5);
-          ctx.lineTo(pw * 0.5, ph * 0.5);
-          ctx.lineTo(0, ph * 0.68);
-          ctx.closePath();
-          ctx.fill();
-          ctx.fillStyle = "#0f172a";
-          ctx.beginPath();
-          ctx.moveTo(-pw * 0.18, ph * 0.61);
-          ctx.lineTo(pw * 0.18, ph * 0.61);
-          ctx.lineTo(0, ph * 0.68);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
-
-          return c.toDataURL("image/png");
         }
 
-        var png192 = makeAppIcon(192, false);
-        var png512 = makeAppIcon(512, false);
-        var pngMask512 = makeAppIcon(512, true);
+        var pad = maskable ? s * 0.2 : s * 0.14;
+        var w = s - pad * 2;
+        var docX = pad + w * 0.1;
+        var docY = pad + w * 0.04;
+        var docW = w * 0.72;
+        var docH = w * 0.92;
+        var fold = docW * 0.26;
+        var dr = w * 0.06;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.moveTo(docX + dr, docY);
+        ctx.lineTo(docX + docW - fold, docY);
+        ctx.lineTo(docX + docW, docY + fold);
+        ctx.lineTo(docX + docW, docY + docH - dr);
+        ctx.arcTo(docX + docW, docY + docH, docX, docY + docH, dr);
+        ctx.lineTo(docX + dr, docY + docH);
+        ctx.arcTo(docX, docY + docH, docX, docY, dr);
+        ctx.lineTo(docX, docY + dr);
+        ctx.arcTo(docX, docY, docX + docW, docY, dr);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#cbd5e1";
+        ctx.beginPath();
+        ctx.moveTo(docX + docW - fold, docY);
+        ctx.lineTo(docX + docW - fold, docY + fold);
+        ctx.lineTo(docX + docW, docY + fold);
+        ctx.closePath();
+        ctx.fill();
+
+        var badgeX = docX + docW * 0.12;
+        var badgeY = docY + docH * 0.14;
+        var badgeW = docW * 0.54;
+        var badgeH = docH * 0.18;
+        var br = badgeH * 0.35;
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.moveTo(badgeX + br, badgeY);
+        ctx.arcTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + badgeH, br);
+        ctx.arcTo(badgeX + badgeW, badgeY + badgeH, badgeX, badgeY + badgeH, br);
+        ctx.arcTo(badgeX, badgeY + badgeH, badgeX, badgeY, br);
+        ctx.arcTo(badgeX, badgeY, badgeX + badgeW, badgeY, br);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 " + Math.round(badgeH * 0.62) + "px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("PDF", badgeX + badgeW / 2, badgeY + badgeH * 0.53);
+
+        ctx.fillStyle = "#94a3b8";
+        var lineX = docX + docW * 0.14;
+        var lineH = docH * 0.065;
+        ctx.fillRect(lineX, docY + docH * 0.44, docW * 0.68, lineH);
+        ctx.fillRect(lineX, docY + docH * 0.58, docW * 0.54, lineH);
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(lineX, docY + docH * 0.72, docW * 0.42, lineH);
+
+        ctx.save();
+        ctx.translate(pad + w * 0.78, pad + w * 0.72);
+        ctx.rotate(-Math.PI / 4);
+        var pw = w * 0.13;
+        var ph = w * 0.42;
+        ctx.fillStyle = "rgba(15, 23, 42, 0.22)";
+        ctx.fillRect(-pw * 0.5 + w * 0.02, -ph * 0.5 + w * 0.02, pw, ph);
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillRect(-pw * 0.5, -ph * 0.5, pw, ph);
+        ctx.fillStyle = "#fb7185";
+        ctx.fillRect(-pw * 0.5, -ph * 0.63, pw, ph * 0.14);
+        ctx.fillStyle = "#fde68a";
+        ctx.beginPath();
+        ctx.moveTo(-pw * 0.5, ph * 0.5);
+        ctx.lineTo(pw * 0.5, ph * 0.5);
+        ctx.lineTo(0, ph * 0.68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath();
+        ctx.moveTo(-pw * 0.18, ph * 0.61);
+        ctx.lineTo(pw * 0.18, ph * 0.61);
+        ctx.lineTo(0, ph * 0.68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        return c;
+      };
+
+      try {
+        var png192 = window.__makePdfAppIcon(192, false).toDataURL("image/png");
         document.getElementById("app-icon-192").href = png192;
         document.getElementById("app-touch-icon").href = png192;
 
-        var startUrl = location.href.split("#")[0];
-        var manifest = {
-          id: startUrl,
-          name: "PDF Text Editor",
-          short_name: "PDF Editor",
-          description: "Edit, redact, and flatten text in PDFs privately on mobile.",
-          start_url: startUrl,
-          display: "standalone",
-          theme_color: "#0f172a",
-          background_color: "#0f172a",
-          icons: [
-            { src: png192, sizes: "192x192", type: "image/png", purpose: "any" },
-            { src: png512, sizes: "512x512", type: "image/png", purpose: "any" },
-            { src: pngMask512, sizes: "512x512", type: "image/png", purpose: "maskable" }
-          ]
-        };
-        document.getElementById("app-manifest").href =
-          "data:application/manifest+json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest));
+        // Only attach manifest & service worker if hosted on HTTPS with a real ./manifest.json file
+        // (avoids Android Chrome getting stuck on "Installing app..." with data: manifests or localhost)
+        if (location.protocol === "https:") {
+          fetch("./manifest.json", { method: "HEAD" })
+            .then(function (r) {
+              if (r.ok) {
+                document.getElementById("app-manifest").setAttribute("href", "./manifest.json");
+                if ("serviceWorker" in navigator) {
+                  navigator.serviceWorker.register("./sw.js").catch(function () {});
+                }
+              }
+            })
+            .catch(function () {});
+        }
       } catch (_) {}
     })();
   </script>
@@ -213,8 +207,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 8px 12px;
+      gap: 6px;
+      padding: 8px 10px;
       padding-top: max(8px, env(safe-area-inset-top));
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -225,14 +219,14 @@
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       min-width: 0;
       flex: 1;
     }
 
     .brand {
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -253,19 +247,33 @@
       color: var(--text);
       background: var(--surface-2);
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      min-height: 40px;
-      padding: 0 12px;
+      min-height: 38px;
+      padding: 0 10px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       transition: background 0.15s, transform 0.1s, opacity 0.15s;
     }
 
     button:active { transform: scale(0.96); }
     button:disabled { opacity: 0.4; pointer-events: none; }
+
+    select.lang-select {
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-height: 36px;
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
 
     .btn-primary { background: var(--primary); }
     .btn-primary:hover { background: var(--primary-hover); }
@@ -276,7 +284,7 @@
       border: 1px solid rgba(239, 68, 68, 0.35);
     }
     .btn-ghost { background: transparent; border: 1px solid var(--border); }
-    .btn-icon { padding: 0; width: 40px; min-width: 40px; }
+    .btn-icon { padding: 0; width: 38px; min-width: 38px; }
 
     .stage-wrap {
       position: relative;
@@ -305,17 +313,17 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 28px 22px;
+      padding: 26px 20px;
       text-align: center;
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
     }
 
-    .welcome-icon { font-size: 48px; margin-bottom: 10px; }
-    .welcome h1 { margin: 0 0 8px; font-size: 21px; }
-    .welcome p { margin: 0 0 22px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .welcome-icon { font-size: 46px; margin-bottom: 10px; }
+    .welcome h1 { margin: 0 0 8px; font-size: 20px; }
+    .welcome p { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
     .welcome-btns { display: flex; flex-direction: column; gap: 10px; }
-    .welcome-btns button { min-height: 48px; font-size: 15px; width: 100%; }
-    .privacy-note { margin-top: 16px; font-size: 12px; color: var(--muted); }
+    .welcome-btns button { min-height: 46px; font-size: 14px; width: 100%; }
+    .privacy-note { margin-top: 14px; font-size: 12px; color: var(--muted); }
 
     .page-wrapper {
       position: relative;
@@ -636,7 +644,7 @@
 
     .modal-card {
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       max-height: 90dvh;
       overflow-y: auto;
       background: var(--surface);
@@ -647,9 +655,9 @@
     }
 
     .modal-card h2 { margin: 0 0 8px; font-size: 18px; }
-    .modal-card p { margin: 0 0 14px; font-size: 13px; color: var(--muted); line-height: 1.45; }
-    .modal-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-    .modal-btns button { min-height: 46px; width: 100%; }
+    .modal-card p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+    .modal-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .modal-btns button { min-height: 44px; width: 100%; }
 
     .mode-list {
       display: flex;
@@ -678,16 +686,32 @@
       background: rgba(16, 185, 129, 0.1);
     }
 
-    .mode-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
+    .mode-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .mode-desc { font-size: 12px; line-height: 1.35; color: var(--muted); }
+
+    .info-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #cbd5e1;
+      margin-bottom: 10px;
     }
 
-    .mode-desc {
+    .info-box strong { color: #ffffff; }
+
+    .pack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pack-grid button {
+      min-height: 36px;
       font-size: 12px;
-      line-height: 1.35;
-      color: var(--muted);
     }
 
     .toast {
@@ -730,12 +754,21 @@
   <div class="app">
     <header class="topbar">
       <div class="topbar-left">
-        <button id="btn-open" class="btn-ghost" title="Open PDF">📂 Open</button>
+        <button id="btn-back-menu" class="btn-ghost" style="display:none;">← <span id="lbl-back">Menu</span></button>
+        <button id="btn-open" class="btn-icon btn-ghost" style="display:none;" title="Open PDF">📂</button>
         <div id="doc-title" class="brand">PDF Text Editor</div>
       </div>
       <div class="topbar-actions">
-        <button id="btn-undo" class="btn-icon btn-ghost" title="Undo" disabled>↩️</button>
-        <button id="btn-save" class="btn-success" disabled>⬇️ Save</button>
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="en">🇬🇧 EN</option>
+          <option value="fr">🇫🇷 FR</option>
+          <option value="es">🇪🇸 ES</option>
+          <option value="de">🇩🇪 DE</option>
+          <option value="it">🇮🇹 IT</option>
+          <option value="pt">🇵🇹 PT</option>
+        </select>
+        <button id="btn-undo" class="btn-icon btn-ghost" style="display:none;" title="Undo" disabled>↩️</button>
+        <button id="btn-save" class="btn-success" style="display:none;" disabled>⬇️ <span id="lbl-save">Save</span></button>
       </div>
     </header>
 
@@ -745,14 +778,14 @@
       <main id="stage" class="stage">
         <div id="welcome" class="welcome">
           <div class="welcome-icon">📄✏️</div>
-          <h1>Edit Any PDF Text</h1>
-          <p>Open a PDF from your phone, tap any text to edit or delete it, add new text, and download your updated PDF.</p>
+          <h1 id="lbl-welcome-title">Edit Any PDF Text</h1>
+          <p id="lbl-welcome-desc">Open a PDF from your phone, tap any text to edit or delete it, add new text, and download your updated PDF.</p>
           <div class="welcome-btns">
             <button id="btn-welcome-open" class="btn-primary">📂 Choose PDF File</button>
             <button id="btn-sample" class="btn-ghost">✨ Try Sample PDF</button>
-            <button id="btn-install-app" class="btn-ghost" style="display:none;">📲 Add App to Home Screen</button>
+            <button id="btn-install-help" class="btn-ghost">📲 Add to Home Screen / Install</button>
           </div>
-          <div class="privacy-note">🔒 100% Private — runs inside your browser, nothing is uploaded.</div>
+          <div id="lbl-privacy" class="privacy-note">🔒 100% Private — runs inside your browser, nothing is uploaded.</div>
         </div>
 
         <div id="page-wrapper" class="page-wrapper show-boxes" style="display:none;">
@@ -762,36 +795,37 @@
       </main>
 
       <div id="floating-controls" class="floating-controls">
-        <button id="btn-prev-page" title="Previous Page">◀</button>
+        <button id="btn-prev-page">◀</button>
         <span id="page-indicator" class="ctrl-label">1 / 1</span>
-        <button id="btn-next-page" title="Next Page">▶</button>
+        <button id="btn-next-page">▶</button>
         <div class="divider-v"></div>
-        <button id="btn-zoom-out" title="Zoom Out">−</button>
-        <button id="btn-zoom-fit" title="Fit Screen">Fit</button>
-        <button id="btn-zoom-in" title="Zoom In">+</button>
+        <button id="btn-zoom-out">−</button>
+        <button id="btn-zoom-fit">Fit</button>
+        <button id="btn-zoom-in">+</button>
       </div>
     </div>
 
     <nav id="bottombar" class="bottombar">
       <button class="tool-btn active" data-tool="edit">
         <span class="ico">✏️</span>
-        <span>Edit Text</span>
+        <span id="lbl-tool-edit">Edit Text</span>
       </button>
       <button class="tool-btn" data-tool="add">
         <span class="ico">➕</span>
-        <span>Add Text</span>
+        <span id="lbl-tool-add">Add Text</span>
       </button>
       <button class="tool-btn" data-tool="cover">
         <span class="ico">⬜</span>
-        <span>Cover Area</span>
+        <span id="lbl-tool-cover">Cover Area</span>
       </button>
       <button id="btn-toggle-boxes" class="tool-btn toggle-on">
         <span class="ico">🔲</span>
-        <span>Boxes: On</span>
+        <span id="lbl-boxes">Boxes: On</span>
       </button>
     </nav>
   </div>
 
+  <!-- Text / Cover Editor Bottom Sheet -->
   <div id="sheet-backdrop" class="sheet-backdrop">
     <div id="sheet-panel" class="sheet" role="dialog" aria-modal="true">
       <div class="sheet-handle"></div>
@@ -802,8 +836,8 @@
 
       <div id="text-controls-group">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <label for="edit-textarea" class="field-label" style="margin:0;">Tap here to type</label>
-          <button id="btn-clear-text" class="btn-ghost" style="min-height:28px;padding:0 10px;font-size:12px;">🧹 Erase Text</button>
+          <label id="lbl-tap-type" for="edit-textarea" class="field-label" style="margin:0;">Tap here to type</label>
+          <button id="btn-clear-text" class="btn-ghost" style="min-height:28px;padding:0 10px;font-size:12px;">🧹 Erase</button>
         </div>
         <textarea id="edit-textarea" rows="2" placeholder="Type your new text here..." enterkeyhint="done"></textarea>
 
@@ -828,19 +862,19 @@
 
         <div class="row-between">
           <div>
-            <span class="field-label">Text Color</span>
+            <span id="lbl-text-color" class="field-label">Text Color</span>
             <div class="swatch-row" id="text-swatches">
-              <button class="swatch" data-color="#000000" style="background:#000000;" title="Black"></button>
-              <button class="swatch" data-color="#334155" style="background:#334155;" title="Dark Gray"></button>
-              <button class="swatch" data-color="#1d4ed8" style="background:#1d4ed8;" title="Blue"></button>
-              <button class="swatch" data-color="#dc2626" style="background:#dc2626;" title="Red"></button>
-              <button class="swatch" data-color="#ffffff" style="background:#ffffff;" title="White"></button>
-              <input id="text-color-picker" type="color" value="#000000" title="Custom Text Color" />
+              <button class="swatch" data-color="#000000" style="background:#000000;"></button>
+              <button class="swatch" data-color="#334155" style="background:#334155;"></button>
+              <button class="swatch" data-color="#1d4ed8" style="background:#1d4ed8;"></button>
+              <button class="swatch" data-color="#dc2626" style="background:#dc2626;"></button>
+              <button class="swatch" data-color="#ffffff" style="background:#ffffff;"></button>
+              <input id="text-color-picker" type="color" value="#000000" />
             </div>
           </div>
 
           <div>
-            <span class="field-label">Position Nudge</span>
+            <span id="lbl-pos-nudge" class="field-label">Position Nudge</span>
             <div class="nudge-pad">
               <button data-nudge="-2,0">◀</button>
               <button data-nudge="0,-2">▲</button>
@@ -853,17 +887,17 @@
 
       <div class="row-between" style="margin-top:12px;">
         <div>
-          <span class="field-label">Background Cover</span>
+          <span id="lbl-bg-cover" class="field-label">Background Cover</span>
           <div class="swatch-row" id="bg-swatches">
-            <button class="swatch swatch-none" data-bg="none" title="Transparent">✕</button>
-            <button class="swatch" data-bg="#ffffff" style="background:#ffffff;" title="White"></button>
-            <button id="btn-bg-sampled" class="swatch" data-bg="sampled" title="Auto-matched background"></button>
-            <input id="bg-color-picker" type="color" value="#ffffff" title="Custom Background" />
+            <button class="swatch swatch-none" data-bg="none">✕</button>
+            <button class="swatch" data-bg="#ffffff" style="background:#ffffff;"></button>
+            <button id="btn-bg-sampled" class="swatch" data-bg="sampled"></button>
+            <input id="bg-color-picker" type="color" value="#ffffff" />
           </div>
         </div>
 
         <div id="cover-size-controls" style="display:none;">
-          <span class="field-label">Cover Box Size</span>
+          <span id="lbl-cover-size" class="field-label">Cover Box Size</span>
           <div class="nudge-pad">
             <button data-resize="-4,0">W−</button>
             <button data-resize="4,0">W+</button>
@@ -880,24 +914,25 @@
     </div>
   </div>
 
+  <!-- Export Modal -->
   <div id="export-modal" class="modal-backdrop">
     <div class="modal-card">
-      <h2>Save Edited PDF</h2>
-      <p id="export-note">Choose how to save your updated PDF.</p>
+      <h2 id="lbl-export-title">Save Edited PDF</h2>
+      <p id="export-note"></p>
 
-      <span class="field-label">Export Mode</span>
+      <span id="lbl-export-mode" class="field-label">Export Mode</span>
       <div class="mode-list">
         <button type="button" class="mode-card selected" data-export-mode="flatten">
-          <span class="mode-title">🛡️ Flatten &amp; True Redact (Recommended)</span>
-          <span class="mode-desc">Permanently removes old covered text so it cannot be searched, copied, or recovered underneath. Unedited pages stay untouched.</span>
+          <span id="lbl-mode-flatten-title" class="mode-title">🛡️ Flatten &amp; True Redact (Recommended)</span>
+          <span id="lbl-mode-flatten-desc" class="mode-desc">Permanently removes old covered text so it cannot be searched, copied, or recovered underneath.</span>
         </button>
         <button type="button" class="mode-card" data-export-mode="overlay">
-          <span class="mode-title">⚡ Fast Overlay (Keep vector layer)</span>
-          <span class="mode-desc">Covers old text visually while keeping the original file structure and selectable text.</span>
+          <span id="lbl-mode-overlay-title" class="mode-title">⚡ Fast Overlay (Keep vector layer)</span>
+          <span id="lbl-mode-overlay-desc" class="mode-desc">Covers old text visually while keeping the original file structure and selectable text.</span>
         </button>
       </div>
 
-      <label class="field-label" for="export-filename">File Name</label>
+      <label id="lbl-filename" class="field-label" for="export-filename">File Name</label>
       <input id="export-filename" type="text" value="edited_document.pdf" />
       <div class="modal-btns">
         <button id="btn-download-now" class="btn-success">⬇️ Download PDF</button>
@@ -907,10 +942,33 @@
     </div>
   </div>
 
+  <!-- Install / Home Screen Modal -->
+  <div id="install-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <h2 id="lbl-install-title">Add App to Home Screen</h2>
+      <div id="install-guide-body"></div>
+      <div id="pwa-pack-section" class="info-box">
+        <div id="lbl-pack-desc" style="margin-bottom:8px;"></div>
+        <button id="btn-dl-all-pack" class="btn-primary" style="width:100%;min-height:40px;">📦 Download App Pack (4 files)</button>
+        <div class="pack-grid">
+          <button id="btn-dl-manifest" class="btn-ghost">manifest.json</button>
+          <button id="btn-dl-sw" class="btn-ghost">sw.js</button>
+          <button id="btn-dl-icon192" class="btn-ghost">icon-192.png</button>
+          <button id="btn-dl-icon512" class="btn-ghost">icon-512.png</button>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button id="btn-native-install" class="btn-success" style="display:none;">📲 Install Standalone App Now</button>
+        <button id="btn-install-close" class="btn-ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
   <div id="password-modal" class="modal-backdrop">
     <div class="modal-card">
-      <h2>Password Required</h2>
-      <p id="password-msg">This PDF is protected. Enter its password to open and edit it.</p>
+      <h2 id="lbl-pw-title">Password Required</h2>
+      <p id="password-msg"></p>
       <input id="password-input" type="password" placeholder="Enter PDF password" />
       <div class="modal-btns">
         <button id="btn-password-ok" class="btn-primary">Unlock PDF</button>
@@ -919,10 +977,11 @@
     </div>
   </div>
 
+  <!-- Loading Overlay -->
   <div id="loading-modal" class="modal-backdrop">
     <div class="modal-card" style="text-align:center;max-width:260px;">
       <div class="spinner"></div>
-      <div id="loading-text" style="font-weight:600;font-size:15px;">Loading PDF...</div>
+      <div id="loading-text" style="font-weight:600;font-size:15px;">Loading...</div>
     </div>
   </div>
 
@@ -930,8 +989,487 @@
 
   <script>
     (() => {
+      const I18N = {
+        en: {
+          appTitle: "PDF Text Editor",
+          backMenu: "Menu",
+          openBtnTitle: "Open another PDF",
+          undoTitle: "Undo",
+          saveBtn: "Save",
+          welcomeTitle: "Edit Any PDF Text",
+          welcomeDesc: "Open a PDF from your phone, tap any text to edit or delete it, add new text, and download your updated PDF.",
+          choosePdf: "📂 Choose PDF File",
+          trySample: "✨ Try Sample PDF",
+          installBtn: "📲 Add to Home Screen / Install",
+          privacy: "🔒 100% Private — runs inside your browser, nothing is uploaded.",
+          toolEdit: "Edit Text",
+          toolAdd: "Add Text",
+          toolCover: "Cover Area",
+          boxesOn: "Boxes: On",
+          boxesOff: "Boxes: Off",
+          fit: "Fit",
+          close: "Close",
+          tapToType: "Tap here to type",
+          erase: "🧹 Erase",
+          typePlaceholder: "Type your new text here...",
+          textColor: "Text Color",
+          posNudge: "Position Nudge",
+          bgCover: "Background Cover",
+          coverSize: "Cover Box Size",
+          done: "✓ Done",
+          sheetEditTitle: "Edit PDF Text",
+          sheetAddTitle: "Add New Text",
+          sheetEditAddedTitle: "Edit Added Text",
+          sheetCoverTitle: "Edit Cover Box",
+          restoreOrig: "↺ Restore Original",
+          cancelEdit: "↺ Cancel Edit",
+          deleteItem: "🗑 Delete",
+          exportTitle: "Save Edited PDF",
+          exportModeLabel: "Export Mode",
+          modeFlattenTitle: "🛡️ Flatten & True Redact (Recommended)",
+          modeFlattenDesc: "Permanently removes old covered text so it cannot be searched, copied, or recovered underneath. Unedited pages stay untouched.",
+          modeOverlayTitle: "⚡ Fast Overlay (Keep vector layer)",
+          modeOverlayDesc: "Covers old text visually while keeping the original file structure and selectable text.",
+          fileNameLabel: "File Name",
+          downloadPdf: "⬇️ Download PDF",
+          sharePdf: "📤 Share / Save to Drive",
+          cancel: "Cancel",
+          exportEncryptedNote: "Original PDF was encrypted/restricted, so it will export cleanly as an unlocked flattened PDF.",
+          exportDefaultNote: "Edited pages are flattened cleanly by default so old text cannot be copied or searched.",
+          pwTitle: "Password Required",
+          pwWrong: "Incorrect password. Please try again.",
+          pwPrompt: "This PDF is protected. Enter the password to open it.",
+          pwPlaceholder: "Enter PDF password",
+          pwUnlock: "Unlock PDF",
+          confirmDiscard: "Close this PDF and return to the menu? Unsaved changes will be lost.",
+          loadingOpening: "Opening PDF...",
+          loadingUnlocking: "Unlocking PDF...",
+          loadingSample: "Creating sample PDF...",
+          loadingPage: "Rendering page {n}...",
+          loadingBuilding: "Building your new PDF...",
+          loadingCopyPage: "Copying page {p} / {t}...",
+          loadingFlattenPage: "Flattening & redacting page {p} / {t}...",
+          loadingExportPage: "Exporting page {p} / {t}...",
+          toastUndid: "Undid last change",
+          toastScanned: "Scanned PDF detected — tap anywhere to write over it!",
+          toastTapEdit: "Tap any text on the page to edit it!",
+          toastTapAdd: "Tap anywhere on the page to type text",
+          toastDragCover: "Drag your finger over an area to cover it",
+          toastTapBlue: "Tap inside a blue box, or switch to 'Add Text'",
+          toastRestored: "Restored original text",
+          toastDeleted: "Deleted",
+          toastDownloaded: "Downloaded! Check your Downloads folder.",
+          toastPackStarted: "Downloading 4 app files...",
+          installTitle: "Add App to Home Screen",
+          installNativeBtn: "📲 Install Standalone App Now",
+          installPackBtn: "📦 Download App Pack (4 files)",
+          installPackDesc: "<strong>For full standalone app (GitHub Pages):</strong> Download these 4 tiny files and upload them to the same folder as <code>index.html</code>, then reload and tap <strong>Install</strong>.",
+          installGuideHtml:
+            "<div class='info-box'><strong>Why did \"Installing app...\" do nothing?</strong><br>" +
+            "1. <b>Android permission:</b> On Xiaomi, POCO, Oppo, or some Android phones, open <b>Phone Settings → Apps → Chrome → Permissions</b> and enable <b>Home screen shortcuts</b>.<br>" +
+            "2. <b>Single file or localhost:</b> Chrome's <i>\"Install app\"</i> needs HTTPS + separate manifest/icon files, otherwise it hangs. Choose Chrome <b>⋮ → Add to Home screen → Create shortcut</b> to add the icon right away!</div>"
+        },
+        fr: {
+          appTitle: "Éditeur PDF",
+          backMenu: "Menu",
+          openBtnTitle: "Ouvrir un autre PDF",
+          undoTitle: "Annuler",
+          saveBtn: "Enreg.",
+          welcomeTitle: "Modifier le texte d'un PDF",
+          welcomeDesc: "Ouvrez un PDF depuis votre téléphone, touchez n'importe quel texte pour le modifier ou le supprimer, ajoutez du texte et téléchargez le nouveau PDF.",
+          choosePdf: "📂 Choisir un fichier PDF",
+          trySample: "✨ Essayer le PDF d'exemple",
+          installBtn: "📲 Ajouter à l'écran d'accueil",
+          privacy: "🔒 100 % privé — tout fonctionne dans votre navigateur, rien n'est envoyé.",
+          toolEdit: "Modifier",
+          toolAdd: "Ajouter",
+          toolCover: "Masquer",
+          boxesOn: "Cadres : Oui",
+          boxesOff: "Cadres : Non",
+          fit: "Ajust.",
+          close: "Fermer",
+          tapToType: "Touchez ici pour écrire",
+          erase: "🧹 Effacer",
+          typePlaceholder: "Écrivez votre nouveau texte ici...",
+          textColor: "Couleur du texte",
+          posNudge: "Ajuster position",
+          bgCover: "Fond de masquage",
+          coverSize: "Taille de la zone",
+          done: "✓ Valider",
+          sheetEditTitle: "Modifier le texte",
+          sheetAddTitle: "Ajouter un texte",
+          sheetEditAddedTitle: "Modifier le texte ajouté",
+          sheetCoverTitle: "Modifier la zone masquée",
+          restoreOrig: "↺ Rétablir l'original",
+          cancelEdit: "↺ Annuler modif.",
+          deleteItem: "🗑 Supprimer",
+          exportTitle: "Enregistrer le PDF",
+          exportModeLabel: "Mode d'exportation",
+          modeFlattenTitle: "🛡️ Aplatir & Masquage réel (Recommandé)",
+          modeFlattenDesc: "Supprime définitivement l'ancien texte masqué (impossible à rechercher ou copier en dessous). Les pages non modifiées restent intactes.",
+          modeOverlayTitle: "⚡ Superposition rapide (Texte vectoriel)",
+          modeOverlayDesc: "Recouvre visuellement l'ancien texte tout en conservant la structure d'origine et le texte sélectionnable.",
+          fileNameLabel: "Nom du fichier",
+          downloadPdf: "⬇️ Télécharger le PDF",
+          sharePdf: "📤 Partager / Enregistrer",
+          cancel: "Annuler",
+          exportEncryptedNote: "Le PDF d'origine était protégé : il sera exporté proprement en PDF aplati et déverrouillé.",
+          exportDefaultNote: "Les pages modifiées sont aplaties par défaut afin que l'ancien texte ne puisse être ni copié ni recherché.",
+          pwTitle: "Mot de passe requis",
+          pwWrong: "Mot de passe incorrect. Veuillez réessayer.",
+          pwPrompt: "Ce PDF est protégé. Entrez son mot de passe pour l'ouvrir.",
+          pwPlaceholder: "Mot de passe du PDF",
+          pwUnlock: "Déverrouiller",
+          confirmDiscard: "Fermer ce PDF et revenir au menu ? Les modifications non enregistrées seront perdues.",
+          loadingOpening: "Ouverture du PDF...",
+          loadingUnlocking: "Déverrouillage du PDF...",
+          loadingSample: "Création du PDF d'exemple...",
+          loadingPage: "Affichage de la page {n}...",
+          loadingBuilding: "Création du nouveau PDF...",
+          loadingCopyPage: "Copie de la page {p} / {t}...",
+          loadingFlattenPage: "Aplatissement et masquage page {p} / {t}...",
+          loadingExportPage: "Exportation page {p} / {t}...",
+          toastUndid: "Dernière modification annulée",
+          toastScanned: "PDF scanné détecté — touchez n'importe où pour écrire !",
+          toastTapEdit: "Touchez n'importe quel texte sur la page pour le modifier !",
+          toastTapAdd: "Touchez n'importe où sur la page pour écrire",
+          toastDragCover: "Glissez votre doigt sur une zone pour la masquer",
+          toastTapBlue: "Touchez un cadre bleu, ou passez sur « Ajouter »",
+          toastRestored: "Texte d'origine rétabli",
+          toastDeleted: "Supprimé",
+          toastDownloaded: "Téléchargé ! Vérifiez vos Téléchargements.",
+          toastPackStarted: "Téléchargement des 4 fichiers...",
+          installTitle: "Ajouter à l'écran d'accueil",
+          installNativeBtn: "📲 Installer l'application maintenant",
+          installPackBtn: "📦 Télécharger le pack PWA (4 fichiers)",
+          installPackDesc: "<strong>Pour une vraie appli plein écran (GitHub Pages) :</strong> Téléchargez ces 4 petits fichiers et mettez-les dans le même dossier que <code>index.html</code>, puis rechargez la page et touchez <strong>Installer</strong>.",
+          installGuideHtml:
+            "<div class='info-box'><strong>Pourquoi « Installation de l'application... » ne faisait rien ?</strong><br>" +
+            "1. <b>Autorisation Android :</b> Sur Xiaomi, POCO, Oppo ou certains Android, ouvrez <b>Paramètres → Applications → Chrome → Autorisations</b> et activez <b>Raccourcis sur l'écran d'accueil</b>.<br>" +
+            "2. <b>Fichier unique ou localhost :</b> Le bouton <i>« Installer »</i> de Chrome exige HTTPS + des fichiers manifest/icônes séparés. Choisissez <b>⋮ → Ajouter à l'écran d'accueil → Créer un raccourci</b> pour créer l'icône tout de suite !</div>"
+        },
+        es: {
+          appTitle: "Editor de PDF",
+          backMenu: "Menú",
+          openBtnTitle: "Abrir otro PDF",
+          undoTitle: "Deshacer",
+          saveBtn: "Guardar",
+          welcomeTitle: "Edita cualquier texto PDF",
+          welcomeDesc: "Abre un PDF desde tu móvil, toca cualquier texto para editarlo o borrarlo, añade texto nuevo y descarga el PDF.",
+          choosePdf: "📂 Elegir archivo PDF",
+          trySample: "✨ Probar PDF de ejemplo",
+          installBtn: "📲 Añadir a pantalla de inicio",
+          privacy: "🔒 100 % privado — funciona en tu navegador, nada se sube a servidores.",
+          toolEdit: "Editar",
+          toolAdd: "Añadir",
+          toolCover: "Cubrir",
+          boxesOn: "Marcos: Sí",
+          boxesOff: "Marcos: No",
+          fit: "Ajust.",
+          close: "Cerrar",
+          tapToType: "Toca aquí para escribir",
+          erase: "🧹 Borrar",
+          typePlaceholder: "Escribe tu nuevo texto aquí...",
+          textColor: "Color de texto",
+          posNudge: "Mover posición",
+          bgCover: "Fondo de cobertura",
+          coverSize: "Tamaño de caja",
+          done: "✓ Listo",
+          sheetEditTitle: "Editar texto del PDF",
+          sheetAddTitle: "Añadir texto nuevo",
+          sheetEditAddedTitle: "Editar texto añadido",
+          sheetCoverTitle: "Editar área cubierta",
+          restoreOrig: "↺ Restaurar original",
+          cancelEdit: "↺ Cancelar",
+          deleteItem: "🗑 Eliminar",
+          exportTitle: "Guardar PDF editado",
+          exportModeLabel: "Modo de exportación",
+          modeFlattenTitle: "🛡️ Aplanar y censurar (Recomendado)",
+          modeFlattenDesc: "Elimina permanentemente el texto anterior cubierto para que no pueda buscarse ni copiarse debajo.",
+          modeOverlayTitle: "⚡ Superposición rápida (Vectorial)",
+          modeOverlayDesc: "Cubre el texto visualmente manteniendo la estructura original y el texto seleccionable.",
+          fileNameLabel: "Nombre del archivo",
+          downloadPdf: "⬇️ Descargar PDF",
+          sharePdf: "📤 Compartir / Guardar",
+          cancel: "Cancelar",
+          exportEncryptedNote: "El PDF original estaba protegido; se exportará desbloqueado y aplanado.",
+          exportDefaultNote: "Las páginas editadas se aplanan por defecto para que el texto anterior no pueda copiarse ni buscarse.",
+          pwTitle: "Contraseña requerida",
+          pwWrong: "Contraseña incorrecta. Inténtalo de nuevo.",
+          pwPrompt: "Este PDF está protegido. Introduce la contraseña.",
+          pwPlaceholder: "Contraseña del PDF",
+          pwUnlock: "Desbloquear",
+          confirmDiscard: "¿Cerrar este PDF y volver al menú? Se perderán los cambios no guardados.",
+          loadingOpening: "Abriendo PDF...",
+          loadingUnlocking: "Desbloqueando PDF...",
+          loadingSample: "Creando PDF de ejemplo...",
+          loadingPage: "Cargando página {n}...",
+          loadingBuilding: "Creando nuevo PDF...",
+          loadingCopyPage: "Copiando página {p} / {t}...",
+          loadingFlattenPage: "Aplanando página {p} / {t}...",
+          loadingExportPage: "Exportando página {p} / {t}...",
+          toastUndid: "Cambio deshecho",
+          toastScanned: "PDF escaneado — ¡toca cualquier parte para escribir!",
+          toastTapEdit: "¡Toca cualquier texto para editarlo!",
+          toastTapAdd: "Toca en la página para escribir",
+          toastDragCover: "Arrastra el dedo para cubrir un área",
+          toastTapBlue: "Toca un cuadro azul o cambia a 'Añadir'",
+          toastRestored: "Texto original restaurado",
+          toastDeleted: "Eliminado",
+          toastDownloaded: "¡Descargado! Revisa tu carpeta Descargas.",
+          toastPackStarted: "Descargando 4 archivos...",
+          installTitle: "Añadir a pantalla de inicio",
+          installNativeBtn: "📲 Instalar aplicación ahora",
+          installPackBtn: "📦 Descargar pack PWA (4 archivos)",
+          installPackDesc: "<strong>Para app completa (GitHub Pages):</strong> Descarga estos 4 archivos y súbelos junto a <code>index.html</code>.",
+          installGuideHtml: "<div class='info-box'>1. En Xiaomi/POCO/Oppo, activa <b>Accesos directos en pantalla de inicio</b> en Ajustes → Apps → Chrome → Permisos.<br>2. En archivo único o localhost, usa <b>⋮ → Añadir a pantalla de inicio → Crear acceso directo</b>.</div>"
+        },
+        de: {
+          appTitle: "PDF-Editor",
+          backMenu: "Menü",
+          openBtnTitle: "Anderes PDF öffnen",
+          undoTitle: "Rückgängig",
+          saveBtn: "Speichern",
+          welcomeTitle: "Jeden PDF-Text bearbeiten",
+          welcomeDesc: "PDF vom Handy öffnen, Text antippen zum Bearbeiten oder Löschen, neuen Text hinzufügen und PDF herunterladen.",
+          choosePdf: "📂 PDF-Datei wählen",
+          trySample: "✨ Beispiel-PDF testen",
+          installBtn: "📲 Zum Startbildschirm hinzufügen",
+          privacy: "🔒 100 % privat — läuft lokal im Browser, kein Upload.",
+          toolEdit: "Bearbeiten",
+          toolAdd: "Hinzufügen",
+          toolCover: "Abdecken",
+          boxesOn: "Rahmen: An",
+          boxesOff: "Rahmen: Aus",
+          fit: "Anp.",
+          close: "Schließen",
+          tapToType: "Zum Tippen berühren",
+          erase: "🧹 Löschen",
+          typePlaceholder: "Neuen Text eingeben...",
+          textColor: "Textfarbe",
+          posNudge: "Position",
+          bgCover: "Hintergrundfarbe",
+          coverSize: "Feldgröße",
+          done: "✓ Fertig",
+          sheetEditTitle: "PDF-Text bearbeiten",
+          sheetAddTitle: "Text hinzufügen",
+          sheetEditAddedTitle: "Text bearbeiten",
+          sheetCoverTitle: "Abdeckung bearbeiten",
+          restoreOrig: "↺ Original",
+          cancelEdit: "↺ Abbrechen",
+          deleteItem: "🗑 Löschen",
+          exportTitle: "PDF speichern",
+          exportModeLabel: "Exportmodus",
+          modeFlattenTitle: "🛡️ Reduzieren & Echt schwärzen (Empfohlen)",
+          modeFlattenDesc: "Entfernt alten überdeckten Text dauerhaft, sodass er nicht mehr kopiert oder gesucht werden kann.",
+          modeOverlayTitle: "⚡ Schnelle Überlagerung (Vektor)",
+          modeOverlayDesc: "Überdeckt alten Text optisch und behält auswählbaren Text bei.",
+          fileNameLabel: "Dateiname",
+          downloadPdf: "⬇️ PDF herunterladen",
+          sharePdf: "📤 Teilen / Speichern",
+          cancel: "Abbrechen",
+          exportEncryptedNote: "Geschütztes PDF wird entsperrt und reduziert exportiert.",
+          exportDefaultNote: "Bearbeitete Seiten werden standardmäßig reduziert, um alten Text dauerhaft zu entfernen.",
+          pwTitle: "Passwort erforderlich",
+          pwWrong: "Falsches Passwort.",
+          pwPrompt: "Dieses PDF ist geschützt. Passwort eingeben:",
+          pwPlaceholder: "PDF-Passwort",
+          pwUnlock: "Entsperren",
+          confirmDiscard: "PDF schließen und zum Menü zurückkehren? Nicht gespeicherte Änderungen gehen verloren.",
+          loadingOpening: "PDF wird geöffnet...",
+          loadingUnlocking: "PDF wird entsperrt...",
+          loadingSample: "Beispiel-PDF wird erstellt...",
+          loadingPage: "Seite {n} wird geladen...",
+          loadingBuilding: "PDF wird erstellt...",
+          loadingCopyPage: "Seite {p} / {t} kopieren...",
+          loadingFlattenPage: "Seite {p} / {t} reduzieren...",
+          loadingExportPage: "Seite {p} / {t} exportieren...",
+          toastUndid: "Rückgängig gemacht",
+          toastScanned: "Gescanntes PDF — überall tippen zum Schreiben!",
+          toastTapEdit: "Tippen Sie auf einen Text zum Bearbeiten!",
+          toastTapAdd: "Tippen Sie auf die Seite, um Text einzufügen",
+          toastDragCover: "Finger über Bereich ziehen zum Abdecken",
+          toastTapBlue: "Blauen Rahmen antippen oder 'Hinzufügen' wählen",
+          toastRestored: "Original wiederhergestellt",
+          toastDeleted: "Gelöscht",
+          toastDownloaded: "Heruntergeladen! Siehe Downloads.",
+          toastPackStarted: "4 App-Dateien werden geladen...",
+          installTitle: "Zum Startbildschirm hinzufügen",
+          installNativeBtn: "📲 App jetzt installieren",
+          installPackBtn: "📦 App-Paket laden (4 Dateien)",
+          installPackDesc: "<strong>Für echte Web-App (GitHub Pages):</strong> Diese 4 Dateien neben <code>index.html</code> hochladen.",
+          installGuideHtml: "<div class='info-box'>1. Auf Xiaomi/POCO/Oppo unter <b>Einstellungen → Apps → Chrome → Berechtigungen</b> „Startbildschirm-Verknüpfungen“ aktivieren.<br>2. Bei Einzeldatei/localhost im Chrome-Menü <b>Zum Startbildschirm → Verknüpfung erstellen</b> wählen.</div>"
+        },
+        it: {
+          appTitle: "Editor PDF",
+          backMenu: "Menu",
+          openBtnTitle: "Apri un altro PDF",
+          undoTitle: "Annulla",
+          saveBtn: "Salva",
+          welcomeTitle: "Modifica qualsiasi testo PDF",
+          welcomeDesc: "Apri un PDF dal telefono, tocca qualsiasi testo per modificarlo o cancellarlo, aggiungi testo e scarica il PDF.",
+          choosePdf: "📂 Scegli file PDF",
+          trySample: "✨ Prova PDF di esempio",
+          installBtn: "📲 Aggiungi a schermata Home",
+          privacy: "🔒 100% privato — funziona nel browser, nessun caricamento online.",
+          toolEdit: "Modifica",
+          toolAdd: "Aggiungi",
+          toolCover: "Copri",
+          boxesOn: "Riquadri: Sì",
+          boxesOff: "Riquadri: No",
+          fit: "Adatta",
+          close: "Chiudi",
+          tapToType: "Tocca qui per scrivere",
+          erase: "🧹 Cancella",
+          typePlaceholder: "Scrivi il nuovo testo...",
+          textColor: "Colore testo",
+          posNudge: "Sposta",
+          bgCover: "Sfondo copertura",
+          coverSize: "Dimensioni",
+          done: "✓ Fatto",
+          sheetEditTitle: "Modifica testo PDF",
+          sheetAddTitle: "Aggiungi testo",
+          sheetEditAddedTitle: "Modifica testo aggiunto",
+          sheetCoverTitle: "Modifica copertura",
+          restoreOrig: "↺ Ripristina",
+          cancelEdit: "↺ Annulla",
+          deleteItem: "🗑 Elimina",
+          exportTitle: "Salva PDF modificato",
+          exportModeLabel: "Modalità esportazione",
+          modeFlattenTitle: "🛡️ Appiattisci e oscura (Consigliato)",
+          modeFlattenDesc: "Rimuove definitivamente il vecchio testo coperto così non può essere cercato o copiato.",
+          modeOverlayTitle: "⚡ Sovrapposizione rapida (Vettoriale)",
+          modeOverlayDesc: "Copre visivamente il testo mantenendo la struttura originale.",
+          fileNameLabel: "Nome file",
+          downloadPdf: "⬇️ Scarica PDF",
+          sharePdf: "📤 Condividi / Salva",
+          cancel: "Annulla",
+          exportEncryptedNote: "Il PDF era protetto; verrà esportato sbloccato e appiattito.",
+          exportDefaultNote: "Le pagine modificate vengono appiattite per rimuovere il vecchio testo.",
+          pwTitle: "Password richiesta",
+          pwWrong: "Password errata. Riprova.",
+          pwPrompt: "Questo PDF è protetto. Inserisci la password.",
+          pwPlaceholder: "Password PDF",
+          pwUnlock: "Sblocca",
+          confirmDiscard: "Chiudere questo PDF e tornare al menu? Le modifiche non salvate andranno perse.",
+          loadingOpening: "Apertura PDF...",
+          loadingUnlocking: "Sblocco PDF...",
+          loadingSample: "Creazione PDF di esempio...",
+          loadingPage: "Caricamento pagina {n}...",
+          loadingBuilding: "Creazione nuovo PDF...",
+          loadingCopyPage: "Copia pagina {p} / {t}...",
+          loadingFlattenPage: "Appiattimento pagina {p} / {t}...",
+          loadingExportPage: "Esportazione pagina {p} / {t}...",
+          toastUndid: "Modifica annullata",
+          toastScanned: "PDF scansionato — tocca ovunque per scrivere!",
+          toastTapEdit: "Tocca qualsiasi testo per modificarlo!",
+          toastTapAdd: "Tocca la pagina per aggiungere testo",
+          toastDragCover: "Trascina il dito per coprire un'area",
+          toastTapBlue: "Tocca un riquadro blu o scegli 'Aggiungi'",
+          toastRestored: "Testo originale ripristinato",
+          toastDeleted: "Eliminato",
+          toastDownloaded: "Scaricato! Controlla Download.",
+          toastPackStarted: "Download dei 4 file...",
+          installTitle: "Aggiungi a schermata Home",
+          installNativeBtn: "📲 Installa app ora",
+          installPackBtn: "📦 Scarica pacchetto PWA (4 file)",
+          installPackDesc: "<strong>Per app standalone (GitHub Pages):</strong> Carica questi 4 file accanto a <code>index.html</code>.",
+          installGuideHtml: "<div class='info-box'>1. Su Xiaomi/POCO/Oppo attiva <b>Scorciatoie schermata Home</b> in Impostazioni → App → Chrome → Permessi.<br>2. Con file singolo o localhost usa <b>⋮ → Aggiungi a schermata Home → Crea scorciatoia</b>.</div>"
+        },
+        pt: {
+          appTitle: "Editor de PDF",
+          backMenu: "Menu",
+          openBtnTitle: "Abrir outro PDF",
+          undoTitle: "Desfazer",
+          saveBtn: "Salvar",
+          welcomeTitle: "Edite qualquer texto em PDF",
+          welcomeDesc: "Abra um PDF do celular, toque em qualquer texto para editar ou apagar, adicione texto e baixe o novo PDF.",
+          choosePdf: "📂 Escolher arquivo PDF",
+          trySample: "✨ Testar PDF de exemplo",
+          installBtn: "📲 Adicionar à tela inicial",
+          privacy: "🔒 100% privado — roda no navegador, nada é enviado.",
+          toolEdit: "Editar",
+          toolAdd: "Adicionar",
+          toolCover: "Cobrir",
+          boxesOn: "Caixas: Sim",
+          boxesOff: "Caixas: Não",
+          fit: "Ajust.",
+          close: "Fechar",
+          tapToType: "Toque aqui para digitar",
+          erase: "🧹 Apagar",
+          typePlaceholder: "Digite seu novo texto...",
+          textColor: "Cor do texto",
+          posNudge: "Ajustar posição",
+          bgCover: "Fundo de cobertura",
+          coverSize: "Tamanho da caixa",
+          done: "✓ Concluir",
+          sheetEditTitle: "Editar texto do PDF",
+          sheetAddTitle: "Adicionar texto",
+          sheetEditAddedTitle: "Editar texto adicionado",
+          sheetCoverTitle: "Editar cobertura",
+          restoreOrig: "↺ Restaurar original",
+          cancelEdit: "↺ Cancelar",
+          deleteItem: "🗑 Excluir",
+          exportTitle: "Salvar PDF editado",
+          exportModeLabel: "Modo de exportação",
+          modeFlattenTitle: "🛡️ Achatar e ocultar de verdade (Recomendado)",
+          modeFlattenDesc: "Remove permanentemente o texto antigo coberto para que não possa ser pesquisado ou copiado.",
+          modeOverlayTitle: "⚡ Sobreposição rápida (Vetorial)",
+          modeOverlayDesc: "Cobre o texto visualmente mantendo a estrutura original.",
+          fileNameLabel: "Nome do arquivo",
+          downloadPdf: "⬇️ Baixar PDF",
+          sharePdf: "📤 Compartilhar / Salvar",
+          cancel: "Cancelar",
+          exportEncryptedNote: "O PDF original era protegido; será exportado desbloqueado e achatado.",
+          exportDefaultNote: "Páginas editadas são achatadas por padrão para remover o texto antigo.",
+          pwTitle: "Senha necessária",
+          pwWrong: "Senha incorreta. Tente novamente.",
+          pwPrompt: "Este PDF é protegido. Digite a senha.",
+          pwPlaceholder: "Senha do PDF",
+          pwUnlock: "Desbloquear",
+          confirmDiscard: "Fechar este PDF e voltar ao menu? Alterações não salvas serão perdidas.",
+          loadingOpening: "Abrindo PDF...",
+          loadingUnlocking: "Desbloqueando PDF...",
+          loadingSample: "Criando PDF de exemplo...",
+          loadingPage: "Renderizando página {n}...",
+          loadingBuilding: "Gerando novo PDF...",
+          loadingCopyPage: "Copiando página {p} / {t}...",
+          loadingFlattenPage: "Achatando página {p} / {t}...",
+          loadingExportPage: "Exportando página {p} / {t}...",
+          toastUndid: "Alteração desfeita",
+          toastScanned: "PDF digitalizado — toque em qualquer lugar para escrever!",
+          toastTapEdit: "Toque em qualquer texto para editar!",
+          toastTapAdd: "Toque na página para adicionar texto",
+          toastDragCover: "Arraste o dedo sobre a área para cobrir",
+          toastTapBlue: "Toque numa caixa azul ou mude para 'Adicionar'",
+          toastRestored: "Original restaurado",
+          toastDeleted: "Excluído",
+          toastDownloaded: "Baixado! Veja a pasta Downloads.",
+          toastPackStarted: "Baixando 4 arquivos...",
+          installTitle: "Adicionar à tela inicial",
+          installNativeBtn: "📲 Instalar aplicativo agora",
+          installPackBtn: "📦 Baixar pacote PWA (4 arquivos)",
+          installPackDesc: "<strong>Para app completo (GitHub Pages):</strong> Envie estes 4 arquivos junto com <code>index.html</code>.",
+          installGuideHtml: "<div class='info-box'>1. Em Xiaomi/POCO/Oppo ative <b>Atalhos na tela inicial</b> em Configurações → Apps → Chrome → Permissões.<br>2. Em arquivo único ou localhost use <b>⋮ → Adicionar à tela inicial → Criar atalho</b>.</div>"
+        }
+      };
+
+      const savedLang = (() => {
+        try { return localStorage.getItem("pdf_editor_lang"); } catch (_) { return null; }
+      })();
+      const navLang = (navigator.language || "en").slice(0, 2).toLowerCase();
+      let currentLang = I18N[savedLang] ? savedLang : (I18N[navLang] ? navLang : "en");
+
+      function t(key, vars) {
+        let str = (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+        if (vars) {
+          Object.keys(vars).forEach(k => { str = str.replace("{" + k + "}", vars[k]); });
+        }
+        return str;
+      }
+
       if (!window.pdfjsLib || !window.PDFLib) {
-        alert("Could not load PDF libraries. Please make sure you have an internet connection when opening this page.");
+        alert("Could not load PDF libraries. Please make sure you have an internet connection.");
         return;
       }
 
@@ -977,10 +1515,12 @@
       const bottombar = $("bottombar");
       const docTitle = $("doc-title");
       const pageIndicator = $("page-indicator");
+      const btnBackMenu = $("btn-back-menu");
+      const btnOpen = $("btn-open");
       const btnUndo = $("btn-undo");
       const btnSave = $("btn-save");
       const btnToggleBoxes = $("btn-toggle-boxes");
-      const btnInstallApp = $("btn-install-app");
+      const langSelect = $("lang-select");
 
       const sheetBackdrop = $("sheet-backdrop");
       const sheetPanel = $("sheet-panel");
@@ -1000,6 +1540,8 @@
       const exportFilename = $("export-filename");
       const exportNote = $("export-note");
       const btnShareNow = $("btn-share-now");
+      const installModal = $("install-modal");
+      const btnNativeInstall = $("btn-native-install");
       const passwordModal = $("password-modal");
       const passwordInput = $("password-input");
       const passwordMsg = $("password-msg");
@@ -1007,19 +1549,144 @@
       const loadingText = $("loading-text");
       const toastEl = $("toast");
 
+      function applyTranslations() {
+        document.documentElement.lang = currentLang;
+        document.title = t("appTitle");
+        langSelect.value = currentLang;
+        if (!state.pdfJsDoc) docTitle.textContent = t("appTitle");
+
+        $("lbl-back").textContent = t("backMenu");
+        btnOpen.title = t("openBtnTitle");
+        btnUndo.title = t("undoTitle");
+        $("lbl-save").textContent = t("saveBtn");
+
+        $("lbl-welcome-title").textContent = t("welcomeTitle");
+        $("lbl-welcome-desc").textContent = t("welcomeDesc");
+        $("btn-welcome-open").textContent = t("choosePdf");
+        $("btn-sample").textContent = t("trySample");
+        $("btn-install-help").textContent = t("installBtn");
+        $("lbl-privacy").textContent = t("privacy");
+
+        $("lbl-tool-edit").textContent = t("toolEdit");
+        $("lbl-tool-add").textContent = t("toolAdd");
+        $("lbl-tool-cover").textContent = t("toolCover");
+        $("lbl-boxes").textContent = state.showBoxes ? t("boxesOn") : t("boxesOff");
+        $("btn-zoom-fit").textContent = t("fit");
+
+        $("btn-sheet-close").textContent = t("close");
+        $("lbl-tap-type").textContent = t("tapToType");
+        $("btn-clear-text").textContent = t("erase");
+        editTextarea.placeholder = t("typePlaceholder");
+        $("lbl-text-color").textContent = t("textColor");
+        $("lbl-pos-nudge").textContent = t("posNudge");
+        $("lbl-bg-cover").textContent = t("bgCover");
+        $("lbl-cover-size").textContent = t("coverSize");
+        $("btn-apply-item").textContent = t("done");
+
+        $("lbl-export-title").textContent = t("exportTitle");
+        $("lbl-export-mode").textContent = t("exportModeLabel");
+        $("lbl-mode-flatten-title").textContent = t("modeFlattenTitle");
+        $("lbl-mode-flatten-desc").textContent = t("modeFlattenDesc");
+        $("lbl-mode-overlay-title").textContent = t("modeOverlayTitle");
+        $("lbl-mode-overlay-desc").textContent = t("modeOverlayDesc");
+        $("lbl-filename").textContent = t("fileNameLabel");
+        $("btn-download-now").textContent = t("downloadPdf");
+        $("btn-share-now").textContent = t("sharePdf");
+        $("btn-export-cancel").textContent = t("cancel");
+
+        $("lbl-install-title").textContent = t("installTitle");
+        $("install-guide-body").innerHTML = t("installGuideHtml");
+        $("lbl-pack-desc").innerHTML = t("installPackDesc");
+        $("btn-dl-all-pack").textContent = t("installPackBtn");
+        btnNativeInstall.textContent = t("installNativeBtn");
+        $("btn-install-close").textContent = t("close");
+
+        $("lbl-pw-title").textContent = t("pwTitle");
+        passwordInput.placeholder = t("pwPlaceholder");
+        $("btn-password-ok").textContent = t("pwUnlock");
+        $("btn-password-cancel").textContent = t("cancel");
+      }
+
+      langSelect.onchange = () => {
+        currentLang = langSelect.value;
+        try { localStorage.setItem("pdf_editor_lang", currentLang); } catch (_) {}
+        applyTranslations();
+      };
+
+      applyTranslations();
+
       let deferredInstallPrompt = null;
       window.addEventListener("beforeinstallprompt", e => {
         e.preventDefault();
         deferredInstallPrompt = e;
-        btnInstallApp.style.display = "inline-flex";
+        btnNativeInstall.style.display = "inline-flex";
       });
 
-      btnInstallApp.onclick = async () => {
+      $("btn-install-help").onclick = () => {
+        btnNativeInstall.style.display = deferredInstallPrompt ? "inline-flex" : "none";
+        installModal.classList.add("open");
+      };
+      $("btn-install-close").onclick = () => installModal.classList.remove("open");
+
+      btnNativeInstall.onclick = async () => {
         if (!deferredInstallPrompt) return;
         deferredInstallPrompt.prompt();
         await deferredInstallPrompt.userChoice;
         deferredInstallPrompt = null;
-        btnInstallApp.style.display = "none";
+        btnNativeInstall.style.display = "none";
+        installModal.classList.remove("open");
+      };
+
+      function triggerBlobDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 15000);
+      }
+
+      function getManifestBlob() {
+        const obj = {
+          name: "PDF Text Editor",
+          short_name: "PDF Editor",
+          start_url: "./index.html",
+          scope: "./",
+          display: "standalone",
+          theme_color: "#0f172a",
+          background_color: "#0f172a",
+          icons: [
+            { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+            { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }
+          ]
+        };
+        return new Blob([JSON.stringify(obj, null, 2)], { type: "application/manifest+json" });
+      }
+
+      function getSwBlob() {
+        const code =
+          'self.addEventListener("install",()=>self.skipWaiting());\n' +
+          'self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));\n' +
+          'self.addEventListener("fetch",e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});\n';
+        return new Blob([code], { type: "application/javascript" });
+      }
+
+      function getIconPngBlob(size) {
+        return new Promise(res => window.__makePdfAppIcon(size, false).toBlob(res, "image/png"));
+      }
+
+      $("btn-dl-manifest").onclick = () => triggerBlobDownload(getManifestBlob(), "manifest.json");
+      $("btn-dl-sw").onclick = () => triggerBlobDownload(getSwBlob(), "sw.js");
+      $("btn-dl-icon192").onclick = async () => triggerBlobDownload(await getIconPngBlob(192), "icon-192.png");
+      $("btn-dl-icon512").onclick = async () => triggerBlobDownload(await getIconPngBlob(512), "icon-512.png");
+      $("btn-dl-all-pack").onclick = async () => {
+        showToast(t("toastPackStarted"));
+        triggerBlobDownload(getManifestBlob(), "manifest.json");
+        setTimeout(() => triggerBlobDownload(getSwBlob(), "sw.js"), 350);
+        setTimeout(async () => triggerBlobDownload(await getIconPngBlob(192), "icon-192.png"), 700);
+        setTimeout(async () => triggerBlobDownload(await getIconPngBlob(512), "icon-512.png"), 1050);
       };
 
       let toastTimer = null;
@@ -1044,6 +1711,48 @@
         window.visualViewport.addEventListener("scroll", adjustForKeyboard);
       }
 
+      function setEditorVisible(isOpen) {
+        welcomeEl.style.display = isOpen ? "none" : "block";
+        pageWrapper.style.display = isOpen ? "block" : "none";
+        floatingControls.classList.toggle("visible", isOpen);
+        bottombar.classList.toggle("visible", isOpen);
+        btnBackMenu.style.display = isOpen ? "inline-flex" : "none";
+        btnOpen.style.display = isOpen ? "inline-flex" : "none";
+        btnUndo.style.display = isOpen ? "inline-flex" : "none";
+        btnSave.style.display = isOpen ? "inline-flex" : "none";
+        btnSave.disabled = !isOpen;
+        if (!isOpen) docTitle.textContent = t("appTitle");
+      }
+
+      function hasAnyEdits() {
+        const hasOrigEdits = Object.values(state.edits).some(m => m && Object.keys(m).length > 0);
+        const hasCustom = Object.values(state.customItems).some(arr => arr && arr.length > 0);
+        return hasOrigEdits || hasCustom;
+      }
+
+      async function returnToMainMenu() {
+        if (state.pdfJsDoc && hasAnyEdits()) {
+          if (!confirm(t("confirmDiscard"))) return;
+        }
+        if (state.pdfJsDoc) {
+          try { await state.pdfJsDoc.destroy(); } catch (_) {}
+        }
+        state.pdfBytes = null;
+        state.pdfJsDoc = null;
+        state.numPages = 0;
+        state.currentPage = 1;
+        state.pages = {};
+        state.edits = {};
+        state.customItems = {};
+        state.history = [];
+        state.activeEdit = null;
+        btnUndo.disabled = true;
+        overlayLayer.innerHTML = "";
+        setEditorVisible(false);
+      }
+
+      btnBackMenu.onclick = returnToMainMenu;
+
       function cloneEditsSnapshot() {
         return JSON.stringify({ edits: state.edits, customItems: state.customItems });
       }
@@ -1061,10 +1770,10 @@
         state.customItems = snap.customItems || {};
         btnUndo.disabled = state.history.length === 0;
         renderComposite();
-        showToast("Undid last change");
+        showToast(t("toastUndid"));
       }
 
-      $("btn-open").onclick = () => fileInput.click();
+      btnOpen.onclick = () => fileInput.click();
       $("btn-welcome-open").onclick = () => fileInput.click();
 
       fileInput.onchange = async e => {
@@ -1076,7 +1785,7 @@
       };
 
       $("btn-sample").onclick = async () => {
-        setLoading(true, "Creating sample PDF...");
+        setLoading(true, t("loadingSample"));
         try {
           const doc = await PDFDocument.create();
           const page = doc.addPage([595, 842]);
@@ -1115,10 +1824,7 @@
 
       function askPassword(reason) {
         return new Promise((resolve, reject) => {
-          passwordMsg.textContent =
-            reason === 2
-              ? "Incorrect password. Please try again."
-              : "This PDF is password protected. Enter the password to open it.";
+          passwordMsg.textContent = reason === 2 ? t("pwWrong") : t("pwPrompt");
           passwordInput.value = "";
           passwordModal.classList.add("open");
           passwordInput.focus();
@@ -1141,7 +1847,7 @@
       }
 
       async function loadPdfBytes(bytes, fileName) {
-        setLoading(true, "Opening PDF...");
+        setLoading(true, t("loadingOpening"));
         try {
           if (state.pdfJsDoc) {
             try { await state.pdfJsDoc.destroy(); } catch (_) {}
@@ -1174,7 +1880,7 @@
             setLoading(false);
             askPassword(reason)
               .then(pw => {
-                setLoading(true, "Unlocking PDF...");
+                setLoading(true, t("loadingUnlocking"));
                 updatePassword(pw);
               })
               .catch(() => loadingTask.destroy());
@@ -1186,18 +1892,14 @@
           state.currentPage = 1;
 
           docTitle.textContent = state.fileName;
-          welcomeEl.style.display = "none";
-          pageWrapper.style.display = "block";
-          floatingControls.classList.add("visible");
-          bottombar.classList.add("visible");
-          btnSave.disabled = false;
+          setEditorVisible(true);
 
           await openPage(1, true);
           const firstPage = state.pages[1];
           if (firstPage && firstPage.items.length === 0) {
-            showToast("Scanned PDF detected — tap anywhere to write over it!", 4200);
+            showToast(t("toastScanned"), 4200);
           } else {
-            showToast("Tap any text on the page to edit it!");
+            showToast(t("toastTapEdit"));
           }
         } catch (err) {
           if (err && err.message !== "Password cancelled") {
@@ -1493,7 +2195,7 @@
 
       async function openPage(pageNum, resetZoom = false) {
         state.currentPage = Math.max(1, Math.min(state.numPages, pageNum));
-        setLoading(true, `Rendering page ${state.currentPage}...`);
+        setLoading(true, t("loadingPage", { n: state.currentPage }));
         try {
           const pData = await preparePage(state.currentPage);
           if (resetZoom) state.zoom = fitZoomForPage(pData.baseW);
@@ -1780,7 +2482,7 @@
           return;
         }
 
-        showToast("Tap inside a blue box, or switch to 'Add Text'");
+        showToast(t("toastTapBlue"));
       });
 
       let coverDrag = null;
@@ -1824,7 +2526,7 @@
         if (w < 6 || h < 6) {
           const hitC = hitTestCustom(x, y);
           if (hitC) openCustomEditor(hitC);
-          else showToast("Drag your finger across an area to cover it");
+          else showToast(t("toastDragCover"));
           return;
         }
 
@@ -1913,7 +2615,7 @@
           snapshot
         };
 
-        populateSheet("Edit PDF Text", "text", draft, orig.bgColor, existing ? "↺ Restore Original" : "↺ Cancel Edit");
+        populateSheet(t("sheetEditTitle"), "text", draft, orig.bgColor, existing ? t("restoreOrig") : t("cancelEdit"));
       }
 
       function openCustomEditor(item, preSnapshot = null, isBrandNew = false) {
@@ -1926,8 +2628,8 @@
           isBrandNew,
           snapshot
         };
-        const title = item.kind === "cover" ? "Edit Cover Box" : isBrandNew ? "Add New Text" : "Edit Added Text";
-        populateSheet(title, item.kind, item, item.sampledBg || "#ffffff", "🗑 Delete");
+        const title = item.kind === "cover" ? t("sheetCoverTitle") : isBrandNew ? t("sheetAddTitle") : t("sheetEditAddedTitle");
+        populateSheet(title, item.kind, item, item.sampledBg || "#ffffff", t("deleteItem"));
       }
 
       function getCurrentDraftObj() {
@@ -2180,7 +2882,7 @@
         editTextarea.blur();
         sheetBackdrop.classList.remove("open");
         renderComposite();
-        showToast(ae.source === "orig" ? "Restored original text" : "Deleted");
+        showToast(ae.source === "orig" ? t("toastRestored") : t("toastDeleted"));
       };
 
       $("btn-apply-item").onclick = () => closeSheet(true);
@@ -2195,16 +2897,16 @@
           document.querySelectorAll("[data-tool]").forEach(b => b.classList.toggle("active", b === btn));
           overlayLayer.classList.toggle("drawing-mode", state.tool === "cover");
 
-          if (state.tool === "add") showToast("Tap anywhere on the page to type text");
-          else if (state.tool === "cover") showToast("Drag your finger over an area to cover it");
-          else showToast("Tap any text on the page to edit it");
+          if (state.tool === "add") showToast(t("toastTapAdd"));
+          else if (state.tool === "cover") showToast(t("toastDragCover"));
+          else showToast(t("toastTapEdit"));
         };
       });
 
       btnToggleBoxes.onclick = () => {
         state.showBoxes = !state.showBoxes;
         btnToggleBoxes.classList.toggle("toggle-on", state.showBoxes);
-        btnToggleBoxes.querySelector("span:last-child").textContent = state.showBoxes ? "Boxes: On" : "Boxes: Off";
+        $("lbl-boxes").textContent = state.showBoxes ? t("boxesOn") : t("boxesOff");
         renderComposite();
       };
 
@@ -2431,14 +3133,9 @@
         tmpCanvas.height = Math.round(hiVp.height);
         const tmpCtx = tmpCanvas.getContext("2d");
 
-        // 1. Render original page to high-DPI canvas
         await pdfPageJs.render({ canvasContext: tmpCtx, viewport: hiVp }).promise;
-
-        // 2. Paint solid cover boxes over old text pixels (permanently destroys old pixels)
         paintCoverBoxesOnCanvas(tmpCtx, hiScale, pageNum, tmpCtx);
 
-        // 3. Render replacement text using PDF.js standard fonts onto a separate transparent canvas
-        //    so glyphs match true Helvetica/Times/Courier and carry zero hidden old text stream.
         if (pageHasTextToDraw(pageNum)) {
           try {
             const textDoc = await PDFDocument.create();
@@ -2474,7 +3171,6 @@
           }
         }
 
-        // 4. Embed flattened page cleanly (lossless PNG for sharp text; JPEG fallback only for huge photo scans)
         const newPage = outDoc.addPage([baseVp.width, baseVp.height]);
         const pngBlob = await new Promise(res => tmpCanvas.toBlob(res, "image/png"));
         if (pngBlob && pngBlob.size <= 3000000) {
@@ -2494,7 +3190,6 @@
         ]);
         const fontCache = {};
 
-        // Mode 1: Fast Vector Overlay (when chosen and document is unencrypted)
         if (state.exportMode === "overlay" && !state.isEncrypted) {
           try {
             const pdfDoc = await PDFDocument.load(new Uint8Array(state.pdfBytes));
@@ -2508,8 +3203,6 @@
           } catch (_) {}
         }
 
-        // Mode 2: Flatten & True Redact (or fallback for encrypted PDFs)
-        // Unedited pages are copied untouched when unencrypted; edited pages are flattened cleanly with ZERO old text left behind.
         let srcDoc = null;
         if (!state.isEncrypted) {
           try { srcDoc = await PDFDocument.load(new Uint8Array(state.pdfBytes)); } catch (_) {}
@@ -2519,11 +3212,11 @@
         for (let pNum = 1; pNum <= state.numPages; pNum++) {
           const isEdited = editedPages.has(pNum);
           if (!isEdited && srcDoc) {
-            setLoading(true, `Copying page ${pNum} / ${state.numPages}...`);
+            setLoading(true, t("loadingCopyPage", { p: pNum, t: state.numPages }));
             const [copied] = await outDoc.copyPages(srcDoc, [pNum - 1]);
             outDoc.addPage(copied);
           } else {
-            setLoading(true, isEdited ? `Flattening & redacting page ${pNum} / ${state.numPages}...` : `Exporting page ${pNum} / ${state.numPages}...`);
+            setLoading(true, isEdited ? t("loadingFlattenPage", { p: pNum, t: state.numPages }) : t("loadingExportPage", { p: pNum, t: state.numPages }));
             await buildFlattenedRedactedPage(outDoc, pNum);
           }
         }
@@ -2533,9 +3226,7 @@
       btnSave.onclick = () => {
         const baseName = state.fileName.replace(/\.pdf$/i, "");
         exportFilename.value = `${baseName}_edited.pdf`;
-        exportNote.textContent = state.isEncrypted
-          ? "Original PDF was encrypted/restricted, so it will export cleanly as an unlocked flattened PDF."
-          : "Edited pages are flattened cleanly by default so old text cannot be copied or searched.";
+        exportNote.textContent = state.isEncrypted ? t("exportEncryptedNote") : t("exportDefaultNote");
 
         const canShareFiles =
           typeof navigator.share === "function" &&
@@ -2551,7 +3242,7 @@
 
       async function generateExportBlob() {
         exportModal.classList.remove("open");
-        setLoading(true, "Building your new PDF...");
+        setLoading(true, t("loadingBuilding"));
         try {
           const outBytes = await buildEditedPdfBytes();
           return new Blob([outBytes], { type: "application/pdf" });
@@ -2574,7 +3265,7 @@
           a.click();
           a.remove();
           setTimeout(() => URL.revokeObjectURL(url), 60000);
-          showToast("Downloaded! Check your Downloads folder.", 4000);
+          showToast(t("toastDownloaded"), 4000);
         } catch (err) {
           alert("Export failed: " + (err.message || err));
         }
